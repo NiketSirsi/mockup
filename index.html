@@ -138,6 +138,14 @@
 
     <!-- Mode controls -->
     <div class="flex items-center gap-2">
+      <!-- Auto-scroll toggle button -->
+      <button id="autoScrollToggleBtn" onclick="toggleAutoScroll()" class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Toggle automatic slow scrolling">
+        <svg id="autoScrollIcon" class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+        <span id="autoScrollLabel">Auto-Scroll: On</span>
+      </button>
+
       <button id="soundToggleBtn" onclick="toggleSound()" class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Toggle audio effects">
         <svg id="soundIconOn" class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
@@ -145,7 +153,7 @@
         <span id="soundLabel">Sound: On</span>
       </button>
 
-      <button onclick="resetConversation()" class="flex items-center gap-1 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Restart simulation">
+      <button onclick="resetConversation()" class="flex items-center gap-1 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Restart simulation from top">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
@@ -808,6 +816,95 @@
       }
     }
 
+    // -------------------------------------------------------------------------
+    // Automatic Slow Scroll Engine
+    // -------------------------------------------------------------------------
+    let isAutoScrolling = true;
+    let autoScrollRafId = null;
+    let userInteracting = false;
+    let userInteractionTimeout = null;
+    const scrollSpeedPixelsPerSecond = 28; // Gentle reading speed: ~28px per second
+    let lastScrollTimestamp = null;
+    let autoScrollStartDelayTimer = null;
+
+    function initAutoScroll() {
+      const chatArea = document.getElementById('chatMessages');
+      if (!chatArea) return;
+
+      // Start at the top so user can see conversation unfold from message 1
+      chatArea.scrollTop = 0;
+
+      // Detect user manual scroll/drag/touch to temporarily pause auto-scrolling
+      const pauseOnUserInput = () => {
+        if (!isAutoScrolling) return;
+        userInteracting = true;
+        clearTimeout(userInteractionTimeout);
+        userInteractionTimeout = setTimeout(() => {
+          userInteracting = false;
+        }, 3000); // Resume 3s after user stops touching/scrolling
+      };
+
+      chatArea.addEventListener('wheel', pauseOnUserInput, { passive: true });
+      chatArea.addEventListener('touchmove', pauseOnUserInput, { passive: true });
+      chatArea.addEventListener('pointerdown', pauseOnUserInput, { passive: true });
+
+      // Start slow scroll after an initial 1.8s delay (gives user time to absorb header & first message)
+      autoScrollStartDelayTimer = setTimeout(() => {
+        startAutoScrollLoop();
+      }, 1800);
+    }
+
+    function startAutoScrollLoop() {
+      if (autoScrollRafId) cancelAnimationFrame(autoScrollRafId);
+      lastScrollTimestamp = null;
+
+      function step(timestamp) {
+        if (!lastScrollTimestamp) lastScrollTimestamp = timestamp;
+        const deltaSeconds = (timestamp - lastScrollTimestamp) / 1000;
+        lastScrollTimestamp = timestamp;
+
+        const chatArea = document.getElementById('chatMessages');
+        if (chatArea && isAutoScrolling && !userInteracting) {
+          const maxScroll = chatArea.scrollHeight - chatArea.clientHeight;
+          if (chatArea.scrollTop < maxScroll - 1) {
+            chatArea.scrollTop += scrollSpeedPixelsPerSecond * deltaSeconds;
+          }
+        }
+
+        autoScrollRafId = requestAnimationFrame(step);
+      }
+
+      autoScrollRafId = requestAnimationFrame(step);
+    }
+
+    function toggleAutoScroll() {
+      isAutoScrolling = !isAutoScrolling;
+      updateAutoScrollUI();
+      if (isAutoScrolling) {
+        userInteracting = false;
+        showToast('Auto-scroll resumed');
+        startAutoScrollLoop();
+      } else {
+        showToast('Auto-scroll paused');
+      }
+    }
+
+    function updateAutoScrollUI() {
+      const label = document.getElementById('autoScrollLabel');
+      const icon = document.getElementById('autoScrollIcon');
+      if (!label || !icon) return;
+
+      if (isAutoScrolling) {
+        label.innerText = 'Auto-Scroll: On';
+        icon.classList.remove('text-slate-500');
+        icon.classList.add('text-emerald-400');
+      } else {
+        label.innerText = 'Auto-Scroll: Paused';
+        icon.classList.add('text-slate-500');
+        icon.classList.remove('text-emerald-400');
+      }
+    }
+
     // Scroll chat to bottom helper
     function scrollToBottom() {
       const chatArea = document.getElementById('chatMessages');
@@ -1203,8 +1300,24 @@
       const input = document.getElementById('messageInput');
       input.value = '';
       handleInputState('');
-      showToast('Conversation reloaded to initial state');
-      scrollToBottom();
+
+      const chatArea = document.getElementById('chatMessages');
+      if (chatArea) {
+        chatArea.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Reset auto-scroll to play smoothly from the top
+      userInteracting = false;
+      isAutoScrolling = true;
+      updateAutoScrollUI();
+      clearTimeout(autoScrollStartDelayTimer);
+      if (autoScrollRafId) cancelAnimationFrame(autoScrollRafId);
+
+      autoScrollStartDelayTimer = setTimeout(() => {
+        startAutoScrollLoop();
+      }, 1400);
+
+      showToast('Replaying conversation from the top');
     }
 
     // Utility: HTML escape
@@ -1226,6 +1339,11 @@
         closeStaffReportModal();
         closeGroupInfo();
       }
+    });
+
+    // Start auto-scroll engine on page load
+    window.addEventListener('load', () => {
+      initAutoScroll();
     });
   </script>
 </body>

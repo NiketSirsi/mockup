@@ -30,6 +30,7 @@ The bot delivers instant permit clarity, environmental review milestones, upcomi
 - **Device Frame & Responsive View**:
   - Realistic iPhone mobile bezel with dynamic island / notch
   - Desktop / Full-screen toggle button to preview in standard web view
+  - **Automatic Slow-Scroll Timer**: Smooth reading auto-scroll engine with Play/Pause toggle, pause-on-touch/wheel detection, and Replay integration
   - Real-time mobile status bar clock
   - Native Web Audio API sound effects (WhatsApp message send & receive chimes)
 - **Live Interactivity**:
