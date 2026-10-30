@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monta Vista Neighbors | Curbwire Civic Intelligence Demo</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            wa: {
+              teal: '#075E54',
+              tealDark: '#054c44',
+              green: '#128C7E',
+              lightGreen: '#25D366',
+              bgChat: '#EFEAE2',
+              bubbleUser: '#DCF8C6',
+              bubbleUserDark: '#005C4B',
+              bubbleReceived: '#FFFFFF',
+              textPrimary: '#111B21',
+              textSecondary: '#667781',
+              iconGrey: '#54656F',
+              curbwireBadge: '#0D9488',
+            }
+          },
+          fontFamily: {
+            sans: ['Segoe UI', 'Helvetica Neue', 'Helvetica', 'Lucida Grande', 'Arial', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* WhatsApp Background Doodle Pattern in SVG */
+    .wa-chat-bg {
+      background-color: #EFEAE2;
+      background-image: radial-gradient(#d3c8b9 0.75px, transparent 0.75px), radial-gradient(#d3c8b9 0.75px, #efeae2 0.75px);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      position: relative;
+    }
+
+    .wa-chat-bg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.055;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23000000' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Message Bubble Tail Styles */
+    .bubble-tail-left {
+      position: relative;
+    }
+    .bubble-tail-left::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border-top: 0px solid transparent;
+      border-bottom: 12px solid transparent;
+      border-right: 10px solid #FFFFFF;
+    }
+
+    .bubble-tail-right {
+      position: relative;
+    }
+    .bubble-tail-right::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: -8px;
+      width: 0;
+      height: 0;
+      border-top: 0px solid transparent;
+      border-bottom: 12px solid transparent;
+      border-left: 10px solid #DCF8C6;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    /* Typing animation dots */
+    @keyframes typingDot {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-5px); opacity: 1; }
+    }
+    .typing-dot-1 { animation: typingDot 1.4s infinite ease-in-out; }
+    .typing-dot-2 { animation: typingDot 1.4s infinite ease-in-out 0.2s; }
+    .typing-dot-3 { animation: typingDot 1.4s infinite ease-in-out 0.4s; }
+
+    /* Pulse glow for verified badge */
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.3); }
+      50% { box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.15); }
+    }
+    .bot-glow {
+      animation: pulseGlow 3s infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-800 antialiased min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 selection:bg-teal-600 selection:text-white font-sans">
+
+  <!-- Top Showcase Bar / Controls -->
+  <header class="w-full max-w-4xl mb-3 flex flex-wrap items-center justify-between gap-2 px-2 text-slate-300">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg bg-teal-500 flex items-center justify-center text-white font-black text-sm shadow-md">
+        CW
+      </div>
+      <div>
+        <h1 class="text-sm sm:text-base font-semibold text-white tracking-tight flex items-center gap-2">
+          Curbwire Civic Intelligence Agent
+          <span class="text-xs font-normal px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">WhatsApp Web Prototype</span>
+        </h1>
+        <p class="text-xs text-slate-400 hidden sm:block">Ambient municipal data integration for neighborhood group chats</p>
+      </div>
+    </div>
+
+    <!-- Mode controls -->
+    <div class="flex items-center gap-2">
+      <button id="soundToggleBtn" onclick="toggleSound()" class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Toggle audio effects">
+        <svg id="soundIconOn" class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <span id="soundLabel">Sound: On</span>
+      </button>
+
+      <button onclick="resetConversation()" class="flex items-center gap-1 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Restart simulation">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>Replay</span>
+      </button>
+
+      <div class="hidden sm:flex items-center bg-slate-800 p-0.5 rounded-lg border border-slate-700 text-xs">
+        <button id="btnMobileView" onclick="setViewMode('mobile')" class="px-2.5 py-1 rounded-md bg-teal-600 text-white font-medium transition shadow">Mobile View</button>
+        <button id="btnDesktopView" onclick="setViewMode('desktop')" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition">Desktop Frame</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Device Container / Frame -->
+  <main id="appContainer" class="w-full max-w-[430px] h-[860px] max-h-[92vh] bg-black rounded-[42px] p-2.5 shadow-2xl shadow-teal-950/40 border-[5px] border-slate-800 relative flex flex-col overflow-hidden transition-all duration-300">
+    
+    <!-- Phone Notch / Dynamic Island -->
+    <div id="phoneIsland" class="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-4 bg-black rounded-full z-40 flex items-center justify-end px-2">
+      <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-800"></div>
+    </div>
+
+    <!-- WhatsApp Inner Application Frame -->
+    <div class="w-full h-full bg-wa-bgChat rounded-[34px] overflow-hidden flex flex-col relative shadow-inner">
+      
+      <!-- Top Mobile Status Bar -->
+      <div class="w-full bg-[#075E54] text-white/90 text-[11px] px-6 pt-2 pb-1 flex justify-between items-center select-none z-30 font-semibold tracking-tight">
+        <span id="statusBarClock">9:41</span>
+        <div class="flex items-center space-x-1.5">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 21l3.54-.93C9.36 20.64 10.64 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16.5c-1.31 0-2.54-.36-3.59-1l-.26-.15-2.66.7.71-2.6-.17-.27C5.39 15.13 5 13.62 5 12c0-3.86 3.14-7 7-7s7 3.14 7 7-3.14 7-7 7z"/></svg>
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z"/></svg>
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+        </div>
+      </div>
+
+      <!-- WhatsApp Header -->
+      <header class="bg-[#075E54] text-white px-3 py-2 flex items-center justify-between shadow-md z-20 select-none">
+        <div class="flex items-center gap-2 min-w-0 cursor-pointer" onclick="showGroupInfo()">
+          <!-- Back arrow -->
+          <button class="p-1 -ml-1 text-white hover:bg-black/10 rounded-full transition" aria-label="Back">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <!-- Group Avatar with Cupertino Park Photo -->
+          <div class="relative flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden ring-1 ring-white/30 flex items-center justify-center">
+              <!-- Cupertino Memorial Park / Vasona Lake view simulation -->
+              <img src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=120&q=80" 
+                   alt="Cupertino Park" 
+                   class="w-full h-full object-cover"
+                   onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23075E54\'%3E%3Cpath d=\'M12 2L4 7v10l8 5 8-5V7l-8-5z\'/%3E%3C/svg%3E'">
+            </div>
+            <!-- Bot indicator dot on group avatar -->
+            <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#075E54] flex items-center justify-center" title="Curbwire Agent Active">
+              <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+            </span>
+          </div>
+
+          <!-- Group Name & Members Subtitle -->
+          <div class="min-w-0 flex-1 pl-1">
+            <h2 class="text-sm font-semibold leading-tight truncate flex items-center gap-1.5">
+              <span>Monta Vista Neighbors (Cupertino)</span>
+              <svg class="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" title="Civic Intelligence Enabled">
+                <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+            </h2>
+            <p id="groupSubtitle" class="text-[11px] text-teal-100/80 truncate">
+              Sarah, Dave, Priya, Niket, Curbwire Bot
+            </p>
+          </div>
+        </div>
+
+        <!-- WhatsApp Header Action Icons -->
+        <div class="flex items-center gap-1 text-white/90">
+          <!-- Video Call -->
+          <button class="p-1.5 hover:bg-black/10 rounded-full transition" title="Video Call">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+            </svg>
+          </button>
+          <!-- Audio Call -->
+          <button class="p-1.5 hover:bg-black/10 rounded-full transition" title="Voice Call">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
+            </svg>
+          </button>
+          <!-- Search -->
+          <button class="p-1.5 hover:bg-black/10 rounded-full transition" onclick="toggleSearch()" title="Search conversation">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+          <!-- More Options -->
+          <button class="p-1 hover:bg-black/10 rounded-full transition" onclick="toggleMenu()" title="More options">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Search Bar Dropdown (Hidden by default) -->
+      <div id="searchBar" class="hidden bg-[#054c44] px-3 py-2 text-white flex items-center gap-2 border-t border-teal-700/50 transition-all">
+        <svg class="w-4 h-4 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <input id="searchInput" type="text" placeholder="Search permits, roadwork, messages..." oninput="handleSearch(this.value)" class="w-full bg-transparent text-xs text-white placeholder-teal-200/60 focus:outline-none">
+        <button onclick="toggleSearch()" class="text-xs text-teal-200 hover:text-white">✕</button>
+      </div>
+
+      <!-- Chat Scroll Area -->
+      <div id="chatMessages" class="flex-1 wa-chat-bg overflow-y-auto px-3 py-3 space-y-3 text-[13px] relative">
+        
+        <!-- Encryption Notice Badge -->
+        <div class="flex justify-center my-1">
+          <div class="bg-[#FFF4C4] text-[#54656F] text-[10px] sm:text-[11px] text-center px-3 py-1.5 rounded-lg shadow-sm max-w-[90%] border border-[#FFE8A1] flex items-center gap-1.5">
+            <svg class="w-3 h-3 text-[#B78103] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+            </svg>
+            <span>Messages are end-to-end encrypted. Curbwire Civic Bot is connected to verified Cupertino Municipal Open Data.</span>
+          </div>
+        </div>
+
+        <!-- Date separator -->
+        <div class="flex justify-center my-1.5">
+          <span class="bg-white/80 backdrop-blur-sm text-[#54656F] text-[11px] font-medium px-2.5 py-0.5 rounded-md shadow-xs border border-black/5 uppercase tracking-wide">
+            Today
+          </span>
+        </div>
+
+        <!-- Message 1: Sarah -->
+        <div class="flex flex-col items-start message-node" data-sender="Sarah">
+          <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
+            <div class="flex items-baseline justify-between gap-3 mb-0.5">
+              <span class="font-bold text-[12px] text-[#E542A3]">Sarah (Monta Vista)</span>
+            </div>
+            <p class="leading-relaxed text-[13px]">
+              Hey neighbors, does anyone know what’s going on at the corner of Stevens Creek and Vista? They put up temporary fencing around the old bank branch this morning.
+            </p>
+            <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-wa-textSecondary select-none">
+              <span>9:18 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 2: Dave -->
+        <div class="flex flex-col items-start message-node" data-sender="Dave">
+          <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
+            <div class="flex items-baseline justify-between gap-3 mb-0.5">
+              <span class="font-bold text-[12px] text-[#7C3AED]">Dave (Portal Park)</span>
+            </div>
+            <p class="leading-relaxed text-[13px]">
+              Probably another bank or empty retail space 🙄 Anyone else tired of construction on that strip?
+            </p>
+            <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-wa-textSecondary select-none">
+              <span>9:21 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 3: Priya asking Curbwire -->
+        <div class="flex flex-col items-start message-node" data-sender="Priya">
+          <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
+            <div class="flex items-baseline justify-between gap-3 mb-0.5">
+              <span class="font-bold text-[12px] text-[#0284C7]">Priya</span>
+            </div>
+            <p class="leading-relaxed text-[13px]">
+              <span class="bg-teal-50 text-teal-800 font-semibold px-1 py-0.5 rounded border border-teal-200">@Curbwire</span> what's the active permit on 10450 Stevens Creek?
+            </p>
+            <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-wa-textSecondary select-none">
+              <span>9:24 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 4: Curbwire Bot Response -->
+        <div class="flex flex-col items-start message-node" data-sender="Curbwire Bot">
+          <div class="bg-white text-wa-textPrimary max-w-[92%] sm:max-w-[88%] rounded-lg rounded-tl-none p-2.5 sm:p-3 shadow-md border-l-4 border-l-teal-600 border-t border-r border-b border-slate-200/70 bubble-tail-left relative">
+            
+            <!-- Bot Header Badge -->
+            <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100">
+              <div class="flex items-center gap-1.5">
+                <div class="w-5 h-5 rounded-md bg-teal-600 text-white flex items-center justify-center font-bold text-[10px] bot-glow">
+                  CW
+                </div>
+                <span class="font-bold text-[12px] text-teal-800 tracking-tight">Curbwire Agent</span>
+                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-teal-100 text-teal-800 border border-teal-200">
+                  <svg class="w-2.5 h-2.5 text-teal-700" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Verified Civic Agent
+                </span>
+              </div>
+              <span class="text-[9px] text-slate-400 font-mono">Cupertino API</span>
+            </div>
+
+            <!-- Content Card -->
+            <div class="space-y-2 text-[12.5px] leading-relaxed">
+              <div class="font-semibold text-slate-900 flex items-center gap-1">
+                <span>📍</span>
+                <span class="text-teal-900">Permit Record: City of Cupertino Planning & Building</span>
+              </div>
+
+              <div class="bg-slate-50 rounded-md p-2 space-y-1.5 border border-slate-100 text-slate-700">
+                <div class="flex items-start gap-1.5">
+                  <span class="text-teal-600 font-bold">•</span>
+                  <div>
+                    <span class="font-semibold text-slate-900">Permit #2026-PLN-0388</span>
+                    <span class="text-slate-500 text-[11px]"> (Filed Oct 14, 2026)</span>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-1.5">
+                  <span class="text-teal-600 font-bold">•</span>
+                  <div>
+                    <span class="font-semibold text-slate-900">Scope:</span>
+                    <span> Commercial alteration converting 4,200 sq ft retail branch to a community bakery & market with 16 outdoor patio seats.</span>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-1.5">
+                  <span class="text-teal-600 font-bold">•</span>
+                  <div>
+                    <span class="font-semibold text-slate-900">Status:</span>
+                    <span class="inline-block px-1.5 py-0.2 rounded text-[11px] bg-emerald-100 text-emerald-800 font-medium">Environmental review approved</span>.
+                    <span> Final architectural review before Planning Commission on Nov 12.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Interactive Actions inside the bot bubble -->
+              <div class="pt-1 flex flex-wrap items-center gap-2">
+                <button onclick="openStaffReportModal()" class="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2.5 py-1 rounded border border-teal-200 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>View City Staff Report</span>
+                </button>
+
+                <button id="trackProjectBtn" onclick="toggleTrackProject(this)" class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded border border-slate-300 transition">
+                  <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  <span>Track This Project</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-1 mt-1.5 text-[10px] text-wa-textSecondary select-none">
+              <span>9:24 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 5: Dave -->
+        <div class="flex flex-col items-start message-node" data-sender="Dave">
+          <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
+            <div class="flex items-baseline justify-between gap-3 mb-0.5">
+              <span class="font-bold text-[12px] text-[#7C3AED]">Dave (Portal Park)</span>
+            </div>
+            <p class="leading-relaxed text-[13px]">
+              Wait, an actual bakery with patio seating? That's huge.
+            </p>
+            <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-wa-textSecondary select-none">
+              <span>9:25 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 6: Sarah -->
+        <div class="flex flex-col items-start message-node" data-sender="Sarah">
+          <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
+            <div class="flex items-baseline justify-between gap-3 mb-0.5">
+              <span class="font-bold text-[12px] text-[#E542A3]">Sarah (Monta Vista)</span>
+            </div>
+            <p class="leading-relaxed text-[13px]">
+              Thanks <span class="text-teal-700 font-semibold">@Curbwire</span>! Way better than guessing on Nextdoor.
+            </p>
+            <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-wa-textSecondary select-none">
+              <span>9:26 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 7: Curbwire Bot Proactive Alert -->
+        <div class="flex flex-col items-start message-node" data-sender="Curbwire Bot">
+          <div class="bg-white text-wa-textPrimary max-w-[92%] sm:max-w-[88%] rounded-lg rounded-tl-none p-2.5 sm:p-3 shadow-md border-l-4 border-l-amber-500 border-t border-r border-b border-slate-200/70 bubble-tail-left relative">
+            
+            <!-- Bot Header Badge -->
+            <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-amber-100/80">
+              <div class="flex items-center gap-1.5">
+                <div class="w-5 h-5 rounded-md bg-amber-500 text-white flex items-center justify-center font-bold text-[10px]">
+                  ⚠️
+                </div>
+                <span class="font-bold text-[12px] text-amber-900 tracking-tight">Curbwire Proactive Alert</span>
+                <span class="px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-amber-100 text-amber-800">
+                  Public Works
+                </span>
+              </div>
+              <span class="text-[9px] text-slate-400 font-mono">Cupertino GIS</span>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-1.5 text-[12.5px] leading-relaxed text-slate-800">
+              <div class="font-semibold text-amber-950 flex items-center gap-1">
+                <span>⚠️</span>
+                <span>Heads-up: Street Resurfacing Advisory</span>
+              </div>
+
+              <p class="text-slate-700">
+                Public works street resurfacing is scheduled for <span class="font-semibold text-slate-900">McClellan Rd between Vista and Bubb</span> from <span class="font-semibold text-slate-900">8 AM - 3 PM this Thursday</span>. Street parking will be restricted.
+              </p>
+
+              <div class="pt-1 flex items-center gap-2">
+                <button onclick="showToast('Reminder added: McClellan Rd parking restriction on Thursday')" class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 px-2 py-0.8 rounded border border-amber-200 transition">
+                  <svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                  <span>Add Reminder</span>
+                </button>
+                <button onclick="showToast('Detour route: Use Stevens Creek Blvd or Bollinger Rd')" class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-0.8 rounded border border-slate-300 transition">
+                  <span>View Detour</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-1 mt-1.5 text-[10px] text-wa-textSecondary select-none">
+              <span>9:27 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic User Messages go here -->
+        <div id="dynamicMessages" class="space-y-3"></div>
+
+        <!-- Typing Indicator Element (Hidden by default) -->
+        <div id="typingIndicator" class="hidden flex-col items-start">
+          <div class="bg-white text-wa-textPrimary rounded-lg rounded-tl-none px-3 py-2 shadow-sm border border-slate-200/50 flex items-center gap-1.5 bubble-tail-left">
+            <span class="text-xs text-teal-700 font-medium">Curbwire is querying Cupertino Open Data</span>
+            <div class="flex items-center gap-1 pl-1">
+              <span class="w-1.5 h-1.5 bg-teal-600 rounded-full typing-dot-1"></span>
+              <span class="w-1.5 h-1.5 bg-teal-600 rounded-full typing-dot-2"></span>
+              <span class="w-1.5 h-1.5 bg-teal-600 rounded-full typing-dot-3"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Prompt Suggestion Chips -->
+      <div class="bg-[#F0F2F5] border-t border-slate-200/70 px-2.5 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs z-10 select-none">
+        <span class="text-[10px] font-bold text-teal-800 uppercase tracking-wider flex-shrink-0 flex items-center gap-1">
+          <svg class="w-3 h-3 text-teal-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+          Prompts:
+        </span>
+        <button onclick="handleChipClick('@Curbwire check permit on 10450 Stevens Creek')" class="flex-shrink-0 bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-800 px-2.5 py-1 rounded-full border border-slate-300 hover:border-teal-400 text-[11px] font-medium transition shadow-2xs">
+          🔍 Permit on 10450 Stevens Creek
+        </button>
+        <button onclick="handleChipClick('@Curbwire upcoming road closures this week')" class="flex-shrink-0 bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-800 px-2.5 py-1 rounded-full border border-slate-300 hover:border-teal-400 text-[11px] font-medium transition shadow-2xs">
+          🚧 Road closures this week
+        </button>
+        <button onclick="handleChipClick('@Curbwire organize Saturday park cleanup at Memorial Park')" class="flex-shrink-0 bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-800 px-2.5 py-1 rounded-full border border-slate-300 hover:border-teal-400 text-[11px] font-medium transition shadow-2xs">
+          🌳 Saturday park cleanup
+        </button>
+        <button onclick="handleChipClick('@Curbwire what time is street sweeping on McClellan?')" class="flex-shrink-0 bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-800 px-2.5 py-1 rounded-full border border-slate-300 hover:border-teal-400 text-[11px] font-medium transition shadow-2xs">
+          🧹 Street sweeping schedule
+        </button>
+      </div>
+
+      <!-- WhatsApp Bottom Input Bar -->
+      <footer class="bg-[#F0F2F5] px-2.5 py-2 flex items-center gap-1.5 border-t border-slate-200 z-20">
+        <!-- Emoji button -->
+        <button class="p-1.5 text-wa-iconGrey hover:text-slate-800 transition rounded-full hover:bg-slate-200" title="Emoji">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+
+        <!-- Attachment button -->
+        <button class="p-1.5 text-wa-iconGrey hover:text-slate-800 transition rounded-full hover:bg-slate-200" title="Attach file or photo">
+          <svg class="w-5 h-5 transform rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          </svg>
+        </button>
+
+        <!-- Input Box Form -->
+        <form id="chatForm" onsubmit="handleSendMessage(event)" class="flex-1 flex items-center">
+          <div class="w-full relative">
+            <input 
+              id="messageInput" 
+              type="text" 
+              autocomplete="off"
+              placeholder="Type a message or use @curbwire..." 
+              oninput="handleInputState(this.value)"
+              class="w-full bg-white text-wa-textPrimary text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none placeholder-slate-400 shadow-inner border border-slate-200/80"
+            />
+            <span id="atTriggerHint" class="hidden absolute right-2.5 top-2 text-[10px] text-teal-600 bg-teal-50 px-1 rounded font-mono font-medium">@bot</span>
+          </div>
+        </form>
+
+        <!-- Dynamic Send / Voice Button -->
+        <button 
+          id="sendActionBtn" 
+          onclick="handleSendMessage(event)" 
+          class="w-10 h-10 rounded-full bg-[#128C7E] hover:bg-[#075E54] active:scale-95 text-white flex items-center justify-center transition shadow-md flex-shrink-0"
+          title="Send message"
+        >
+          <!-- Mic icon by default when empty -->
+          <svg id="micIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+          </svg>
+          <!-- Paper plane send icon when text present -->
+          <svg id="sendIcon" class="w-5 h-5 hidden transform translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </footer>
+
+    </div>
+
+    <!-- Home indicator bar on modern mobile devices -->
+    <div id="homeIndicator" class="w-32 h-1 bg-slate-400/60 rounded-full mx-auto mt-1.5 select-none pointer-events-none"></div>
+  </main>
+
+  <!-- Interactive Modal: Cupertino City Staff Report -->
+  <div id="staffReportModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white rounded-2xl max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+      
+      <!-- Modal Header -->
+      <div class="bg-[#075E54] text-white p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center font-bold text-white text-base">
+            🏛️
+          </div>
+          <div>
+            <h3 class="font-bold text-sm sm:text-base leading-tight">City of Cupertino — Planning Department</h3>
+            <p class="text-xs text-teal-200">Staff Report & Environmental Determination</p>
+          </div>
+        </div>
+        <button onclick="closeStaffReportModal()" class="text-teal-200 hover:text-white p-1 rounded-lg hover:bg-white/10 text-lg leading-none">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body (Official Document Style) -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-700 font-sans leading-relaxed">
+        
+        <div class="border-b border-slate-200 pb-3 flex flex-wrap justify-between gap-2 text-xs text-slate-500">
+          <div><span class="font-bold text-slate-800">Application #:</span> 2026-PLN-0388</div>
+          <div><span class="font-bold text-slate-800">APN:</span> 326-24-012</div>
+          <div><span class="font-bold text-slate-800">Meeting Date:</span> Nov 12, 2026 (6:45 PM)</div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 text-sm mb-1">Project Location</h4>
+          <p class="text-slate-600">10450 Stevens Creek Blvd, Cupertino, CA 95014 (Corner of Stevens Creek & Vista Dr)</p>
+        </div>
+
+        <div class="bg-amber-50/70 border border-amber-200 rounded-lg p-3">
+          <h4 class="font-bold text-amber-900 text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
+            <span>📋</span> Executive Summary
+          </h4>
+          <p class="text-amber-950 text-xs">
+            Proposed adaptive reuse of a former 4,200 sq. ft. commercial bank building with drive-thru to a multi-tenant artisanal bakery, coffee shop, and specialty neighborhood grocery market. Project includes a 480 sq. ft. outdoor dining patio with 16 seats and dedicated bicycle parking amenities.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 text-sm mb-1">Environmental Review (CEQA)</h4>
+          <p class="text-slate-600">
+            Categorically Exempt pursuant to Section 15301 (Class 1 - Existing Facilities) of the California Environmental Quality Act. No significant adverse traffic, noise, or environmental impacts identified.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 text-sm mb-1">Public Hearing Details</h4>
+          <p class="text-slate-600">
+            Cupertino Planning Commission public hearing scheduled for November 12, 2026 at 6:45 PM in Community Hall (10350 Torre Ave) and virtually via Zoom. Public comments accepted until 5:00 PM on hearing day.
+          </p>
+        </div>
+
+        <div class="bg-slate-100 rounded-lg p-3 text-xs text-slate-600 font-mono">
+          Source: Cupertino Civic Open Data Portal • Automated Feed Verified by Curbwire Agent
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-50 px-4 py-3 border-t border-slate-200 flex justify-between items-center">
+        <a href="https://www.cupertino.org" target="_blank" class="text-teal-700 hover:underline text-xs flex items-center gap-1">
+          Open Official City Portal ↗
+        </a>
+        <div class="flex gap-2">
+          <button onclick="closeStaffReportModal()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-medium">
+            Close
+          </button>
+          <button onclick="downloadReportNotice()" class="px-3 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-800 text-white text-xs font-medium shadow-sm flex items-center gap-1">
+            <span>📥 Export Summary</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Group Info Modal -->
+  <div id="groupInfoModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden border border-slate-200 text-sm">
+      <div class="bg-[#075E54] text-white p-5 text-center relative">
+        <button onclick="closeGroupInfo()" class="absolute top-3 right-3 text-teal-200 hover:text-white">✕</button>
+        <div class="w-16 h-16 rounded-full mx-auto overflow-hidden ring-2 ring-white/50 mb-2 shadow">
+          <img src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=160&q=80" alt="Monta Vista" class="w-full h-full object-cover">
+        </div>
+        <h3 class="font-bold text-base">Monta Vista Neighbors</h3>
+        <p class="text-xs text-teal-100">Cupertino, CA • 5 participants</p>
+      </div>
+      <div class="p-4 space-y-3">
+        <div>
+          <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Group Description</h4>
+          <p class="text-slate-700 text-xs">Neighborhood community channel for Monta Vista residents. Includes Curbwire Civic Intelligence Bot for automated permit, zoning, public works, and local council alerts.</p>
+        </div>
+        <div class="border-t border-slate-100 pt-3">
+          <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Participants</h4>
+          <ul class="space-y-2 text-xs">
+            <li class="flex items-center justify-between">
+              <span class="font-medium text-slate-800">You (Niket)</span>
+              <span class="text-slate-400">Member</span>
+            </li>
+            <li class="flex items-center justify-between">
+              <span class="font-medium text-[#E542A3]">Sarah</span>
+              <span class="text-slate-400">Admin</span>
+            </li>
+            <li class="flex items-center justify-between">
+              <span class="font-medium text-[#7C3AED]">Dave</span>
+              <span class="text-slate-400">Member</span>
+            </li>
+            <li class="flex items-center justify-between">
+              <span class="font-medium text-[#0284C7]">Priya</span>
+              <span class="text-slate-400">Member</span>
+            </li>
+            <li class="flex items-center justify-between bg-teal-50 p-1.5 rounded-lg border border-teal-100">
+              <div class="flex items-center gap-1.5">
+                <div class="w-4 h-4 rounded bg-teal-600 text-[9px] text-white flex items-center justify-center font-bold">CW</div>
+                <span class="font-bold text-teal-800">Curbwire Agent</span>
+              </div>
+              <span class="text-[10px] bg-teal-200/60 text-teal-900 font-semibold px-1.5 py-0.5 rounded">Verified Bot</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="bg-slate-50 p-3 border-t border-slate-100 text-center">
+        <button onclick="closeGroupInfo()" class="w-full py-1.5 text-teal-700 font-semibold text-xs hover:bg-teal-50 rounded">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Embedded Sound Synthesis via Web Audio API (Zero external MP3 dependencies) -->
+  <script>
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, type, duration, delay = 0) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + delay + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + duration);
+      } catch (e) {
+        // Audio synthesis fallback silently
+      }
+    }
+
+    function playSendSound() {
+      playTone(587.33, 'sine', 0.08); // D5
+      playTone(880, 'sine', 0.12, 0.06); // A5
+    }
+
+    function playReceiveSound() {
+      playTone(659.25, 'triangle', 0.09); // E5
+      playTone(523.25, 'triangle', 0.14, 0.07); // C5
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const label = document.getElementById('soundLabel');
+      const icon = document.getElementById('soundIconOn');
+      if (soundEnabled) {
+        label.innerText = 'Sound: On';
+        icon.classList.remove('text-slate-500');
+        icon.classList.add('text-emerald-400');
+        showToast('Sound effects enabled');
+        playSendSound();
+      } else {
+        label.innerText = 'Sound: Off';
+        icon.classList.add('text-slate-500');
+        icon.classList.remove('text-emerald-400');
+        showToast('Sound effects muted');
+      }
+    }
+  </script>
+
+  <!-- Interactive Logic & Simulated Agent Engine -->
+  <script>
+    // Real-time clock update for device status bar
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      const timeStr = `${hours % 12 || 12}:${minutes}`;
+      const elem = document.getElementById('statusBarClock');
+      if (elem) elem.innerText = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // View mode switcher: Mobile vs Desktop frame
+    function setViewMode(mode) {
+      const container = document.getElementById('appContainer');
+      const btnMobile = document.getElementById('btnMobileView');
+      const btnDesktop = document.getElementById('btnDesktopView');
+      const phoneIsland = document.getElementById('phoneIsland');
+      const homeIndicator = document.getElementById('homeIndicator');
+
+      if (mode === 'desktop') {
+        container.classList.remove('max-w-[430px]', 'h-[860px]', 'rounded-[42px]', 'p-2.5', 'border-[5px]');
+        container.classList.add('max-w-4xl', 'h-[85vh]', 'rounded-xl', 'p-0', 'border', 'border-slate-700');
+        phoneIsland.classList.add('hidden');
+        homeIndicator.classList.add('hidden');
+
+        btnDesktop.classList.add('bg-teal-600', 'text-white', 'shadow');
+        btnDesktop.classList.remove('text-slate-400');
+        btnMobile.classList.remove('bg-teal-600', 'text-white', 'shadow');
+        btnMobile.classList.add('text-slate-400');
+      } else {
+        container.classList.add('max-w-[430px]', 'h-[860px]', 'rounded-[42px]', 'p-2.5', 'border-[5px]');
+        container.classList.remove('max-w-4xl', 'h-[85vh]', 'rounded-xl', 'p-0', 'border', 'border-slate-700');
+        phoneIsland.classList.remove('hidden');
+        homeIndicator.classList.remove('hidden');
+
+        btnMobile.classList.add('bg-teal-600', 'text-white', 'shadow');
+        btnMobile.classList.remove('text-slate-400');
+        btnDesktop.classList.remove('bg-teal-600', 'text-white', 'shadow');
+        btnDesktop.classList.add('text-slate-400');
+      }
+    }
+
+    // Scroll chat to bottom helper
+    function scrollToBottom() {
+      const chatArea = document.getElementById('chatMessages');
+      setTimeout(() => {
+        chatArea.scrollTo({
+          top: chatArea.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 50);
+    }
+
+    // Toast alert notification
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'bg-slate-900/95 text-white text-xs px-3.5 py-2.5 rounded-lg shadow-xl border border-slate-700 flex items-center gap-2 transform transition-all duration-300 translate-y-3 opacity-0 pointer-events-auto';
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      // Trigger enter animation
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-3', 'opacity-0');
+      });
+
+      // Auto dismiss
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Handle Input Changes: Switch Mic <-> Send button icon
+    function handleInputState(val) {
+      const micIcon = document.getElementById('micIcon');
+      const sendIcon = document.getElementById('sendIcon');
+      const atHint = document.getElementById('atTriggerHint');
+
+      if (val.trim().length > 0) {
+        micIcon.classList.add('hidden');
+        sendIcon.classList.remove('hidden');
+      } else {
+        micIcon.classList.remove('hidden');
+        sendIcon.classList.add('hidden');
+      }
+
+      if (val.toLowerCase().includes('@curbwire') || val.includes('@')) {
+        atHint.classList.remove('hidden');
+      } else {
+        atHint.classList.add('hidden');
+      }
+    }
+
+    // Quick prompt chip click
+    function handleChipClick(text) {
+      const input = document.getElementById('messageInput');
+      input.value = text;
+      handleInputState(text);
+      handleSendMessage();
+    }
+
+    // Current formatted time for messages
+    function getCurrentTime() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      return `${hours}:${minutes} ${ampm}`;
+    }
+
+    // Append outgoing user message
+    function appendUserMessage(text) {
+      const container = document.getElementById('dynamicMessages');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex flex-col items-end message-node';
+      
+      const timeStr = getCurrentTime();
+
+      wrapper.innerHTML = `
+        <div class="bg-wa-bubbleUser text-wa-textPrimary max-w-[85%] rounded-lg rounded-tr-none p-2 sm:p-2.5 shadow-sm border border-emerald-200/60 bubble-tail-right relative">
+          <p class="leading-relaxed text-[13px] whitespace-pre-wrap">${escapeHTML(text)}</p>
+          <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-wa-textSecondary select-none">
+            <span>${timeStr}</span>
+            <svg class="w-3.5 h-3.5 text-[#53bdeb]" fill="currentColor" viewBox="0 0 16 15">
+              <path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.879a.32.32 0 0 1-.484.033l-.358-.325a.319.319 0 0 0-.484.032l-.378.483a.418.418 0 0 0 .036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.879a.32.32 0 0 1-.484.033L1.891 7.769a.366.366 0 0 0-.515.006l-.423.433a.364.364 0 0 0 .006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z"/>
+            </svg>
+          </div>
+        </div>
+      `;
+      container.appendChild(wrapper);
+      playSendSound();
+      scrollToBottom();
+    }
+
+    // Append Curbwire Bot Agent Message
+    function appendBotMessage(data) {
+      const container = document.getElementById('dynamicMessages');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex flex-col items-start message-node';
+      const timeStr = getCurrentTime();
+
+      let actionButtons = '';
+      if (data.actions) {
+        actionButtons = `<div class="pt-1.5 flex flex-wrap items-center gap-2">` + 
+          data.actions.map(act => `
+            <button onclick="${act.handler}" class="inline-flex items-center gap-1 text-[11px] font-semibold ${act.primary ? 'text-teal-700 bg-teal-50 border-teal-200 hover:bg-teal-100' : 'text-slate-700 bg-slate-100 border-slate-300 hover:bg-slate-200'} px-2.5 py-1 rounded border transition">
+              ${act.label}
+            </button>
+          `).join('') + `</div>`;
+      }
+
+      wrapper.innerHTML = `
+        <div class="bg-white text-wa-textPrimary max-w-[92%] sm:max-w-[88%] rounded-lg rounded-tl-none p-2.5 sm:p-3 shadow-md border-l-4 ${data.alert ? 'border-l-amber-500' : 'border-l-teal-600'} border-t border-r border-b border-slate-200/70 bubble-tail-left relative">
+          <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100">
+            <div class="flex items-center gap-1.5">
+              <div class="w-5 h-5 rounded-md ${data.alert ? 'bg-amber-500' : 'bg-teal-600'} text-white flex items-center justify-center font-bold text-[10px]">
+                ${data.alert ? '⚠️' : 'CW'}
+              </div>
+              <span class="font-bold text-[12px] ${data.alert ? 'text-amber-900' : 'text-teal-800'} tracking-tight">${data.title || 'Curbwire Agent'}</span>
+              <span class="px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${data.alert ? 'bg-amber-100 text-amber-800' : 'bg-teal-100 text-teal-800'}">
+                ${data.badge || 'Verified Civic Agent'}
+              </span>
+            </div>
+            <span class="text-[9px] text-slate-400 font-mono">Cupertino GIS</span>
+          </div>
+
+          <div class="space-y-1.5 text-[12.5px] leading-relaxed">
+            ${data.htmlContent}
+            ${actionButtons}
+          </div>
+
+          <div class="flex items-center justify-end gap-1 mt-1.5 text-[10px] text-wa-textSecondary select-none">
+            <span>${timeStr}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(wrapper);
+      playReceiveSound();
+      scrollToBottom();
+    }
+
+    // Show / Hide Bot Typing Indicator in Chat & Header
+    function setBotTyping(isTyping) {
+      const indicator = document.getElementById('typingIndicator');
+      const subtitle = document.getElementById('groupSubtitle');
+
+      if (isTyping) {
+        indicator.classList.remove('hidden');
+        subtitle.innerHTML = '<span class="text-emerald-300 font-semibold animate-pulse">Curbwire Bot is typing...</span>';
+        scrollToBottom();
+      } else {
+        indicator.classList.add('hidden');
+        subtitle.innerText = 'Sarah, Dave, Priya, Niket, Curbwire Bot';
+      }
+    }
+
+    // Process User Query and formulate intelligent simulated Curbwire Civic Bot response
+    function simulateBotResponse(userQuery) {
+      setBotTyping(true);
+
+      setTimeout(() => {
+        setBotTyping(false);
+        const lower = userQuery.toLowerCase();
+
+        if (lower.includes('10450') || lower.includes('stevens creek') || lower.includes('bakery')) {
+          appendBotMessage({
+            title: 'Curbwire Permit Lookup',
+            badge: 'Permit Database',
+            htmlContent: `
+              <div class="font-semibold text-slate-900">📍 10450 Stevens Creek Blvd (Cupertino Crossings)</div>
+              <div class="bg-slate-50 p-2 rounded border border-slate-200/80 space-y-1 text-slate-700">
+                <p>• <strong>Permit #2026-PLN-0388:</strong> Commercial alteration for artisanal bakery & cafe with 16 outdoor seats.</p>
+                <p>• <strong>Status:</strong> Architectural review with Planning Commission on <strong>Nov 12, 2026</strong>.</p>
+                <p>• <strong>Contractor:</strong> Bay Heritage Builders • Valued at $1.42M.</p>
+              </div>
+            `,
+            actions: [
+              { label: '📄 View Staff Report', handler: 'openStaffReportModal()', primary: true },
+              { label: '⭐ Track This Project', handler: 'showToast("Now tracking 10450 Stevens Creek")', primary: false }
+            ]
+          });
+        } else if (lower.includes('road') || lower.includes('closure') || lower.includes('resurfacing') || lower.includes('traffic')) {
+          appendBotMessage({
+            title: 'Cupertino Roadwork Advisory',
+            badge: 'Public Works Notice',
+            alert: true,
+            htmlContent: `
+              <div class="font-semibold text-amber-950">🚧 Active & Scheduled Road Restrictions:</div>
+              <ul class="list-disc list-inside space-y-1 text-slate-700">
+                <li><strong>McClellan Rd (Vista to Bubb):</strong> Resurfacing this Thursday, 8 AM - 3 PM. No street parking.</li>
+                <li><strong>De Anza Blvd & Stevens Creek:</strong> Signal loop sensor repair on Friday between 10 PM - 5 AM. Lane reductions.</li>
+              </ul>
+            `,
+            actions: [
+              { label: '🗺️ Open GIS Traffic Map', handler: 'showToast("Opening Cupertino GIS Real-Time Traffic Layer")', primary: true },
+              { label: '🔔 Notify Me Before Work Starts', handler: 'showToast("Calendar notification scheduled for Thursday 7:30 AM")', primary: false }
+            ]
+          });
+        } else if (lower.includes('cleanup') || lower.includes('park') || lower.includes('memorial')) {
+          appendBotMessage({
+            title: 'Civic Community Event Support',
+            badge: 'Cupertino Parks & Rec',
+            htmlContent: `
+              <div class="font-semibold text-slate-900">🌳 Community Volunteer Event Coordination</div>
+              <p class="text-slate-700">Memorial Park (Stevens Creek & Anton Way) has an open community permit for volunteer maintenance.</p>
+              <div class="bg-teal-50/60 p-2 rounded border border-teal-200 text-teal-900">
+                <p>• <strong>Cupertino Tool Trailer:</strong> Available for free reservation with 48h notice.</p>
+                <p>• <strong>Dumpster & Green Waste Bags:</strong> Provided free by Recology for permitted group cleanups.</p>
+              </div>
+            `,
+            actions: [
+              { label: '📋 Reserve City Tool Trailer', handler: 'showToast("Drafting Cupertino Parks reservation form")', primary: true },
+              { label: '📢 Create Group Poll', handler: 'showToast("Poll: What time Saturday? 9 AM or 10 AM?")', primary: false }
+            ]
+          });
+        } else if (lower.includes('sweep') || lower.includes('trash') || lower.includes('recycle')) {
+          appendBotMessage({
+            title: 'Cupertino Waste & Sweeping Schedule',
+            badge: 'Environmental Services',
+            htmlContent: `
+              <div class="font-semibold text-slate-900">🧹 Neighborhood Maintenance Schedule for Monta Vista:</div>
+              <div class="bg-slate-50 p-2 rounded border border-slate-200 text-slate-700 space-y-1">
+                <p>• <strong>Street Sweeping:</strong> 2nd and 4th Wednesday of each month (Next: Nov 11, 7 AM - 11 AM).</p>
+                <p>• <strong>Trash & Organics:</strong> Every Tuesday morning. Cart set-out by 6 AM.</p>
+              </div>
+            `,
+            actions: [
+              { label: '🔔 Set Trash Night Reminder', handler: 'showToast("Set reminder for Monday 8:00 PM")', primary: true }
+            ]
+          });
+        } else {
+          // General ambient civic response
+          appendBotMessage({
+            title: 'Curbwire Civic Agent',
+            badge: 'Cupertino Municipal Data',
+            htmlContent: `
+              <p class="text-slate-700">I scanned City of Cupertino public records for: <em>"${escapeHTML(userQuery)}"</em>.</p>
+              <p class="text-slate-600 text-[11.5px] mt-1">You can ask me about building permits, road closures, city council hearings, tree trimming schedules, or park reservations.</p>
+            `,
+            actions: [
+              { label: '🔍 Browse Cupertino Open Data', handler: 'openStaffReportModal()', primary: true }
+            ]
+          });
+        }
+      }, 1100);
+    }
+
+    // Handle Form Submit / Send Message
+    function handleSendMessage(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendUserMessage(text);
+      input.value = '';
+      handleInputState('');
+
+      // If mentions curbwire or asks a question, trigger bot
+      const mentionsBot = text.toLowerCase().includes('@curbwire') || text.toLowerCase().includes('curbwire');
+      const hasCivicIntent = text.includes('?') || text.toLowerCase().includes('permit') || text.toLowerCase().includes('road') || text.toLowerCase().includes('clean');
+
+      if (mentionsBot || hasCivicIntent) {
+        simulateBotResponse(text);
+      } else {
+        // Occasionally simulate a neighbor reply to make chat feel alive
+        setTimeout(() => {
+          simulateNeighborReply();
+        }, 1200);
+      }
+    }
+
+    // Simulated neighbor response
+    function simulateNeighborReply() {
+      const container = document.getElementById('dynamicMessages');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex flex-col items-start message-node';
+      const timeStr = getCurrentTime();
+
+      wrapper.innerHTML = `
+        <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
+          <div class="flex items-baseline justify-between gap-3 mb-0.5">
+            <span class="font-bold text-[12px] text-[#0284C7]">Priya</span>
+          </div>
+          <p class="leading-relaxed text-[13px]">
+            Good point! Excited to see this project move forward in our neighborhood.
+          </p>
+          <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-wa-textSecondary select-none">
+            <span>${timeStr}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(wrapper);
+      playReceiveSound();
+      scrollToBottom();
+    }
+
+    // Toggle Track Project Button
+    function toggleTrackProject(btn) {
+      if (btn.dataset.tracked === 'true') {
+        btn.dataset.tracked = 'false';
+        btn.innerHTML = `
+          <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          <span>Track This Project</span>
+        `;
+        btn.classList.remove('bg-emerald-100', 'text-emerald-900', 'border-emerald-300');
+        showToast('Untracked project #2026-PLN-0388');
+      } else {
+        btn.dataset.tracked = 'true';
+        btn.innerHTML = `
+          <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          <span class="text-emerald-800">Tracking (Hearing Alerts Active)</span>
+        `;
+        btn.classList.add('bg-emerald-100', 'text-emerald-900', 'border-emerald-300');
+        showToast('Tracking enabled! You will receive Planning Commission updates.');
+      }
+    }
+
+    // Modal Handlers
+    function openStaffReportModal() {
+      const modal = document.getElementById('staffReportModal');
+      modal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        modal.classList.remove('opacity-0');
+      });
+    }
+
+    function closeStaffReportModal() {
+      const modal = document.getElementById('staffReportModal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    function showGroupInfo() {
+      const modal = document.getElementById('groupInfoModal');
+      modal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        modal.classList.remove('opacity-0');
+      });
+    }
+
+    function closeGroupInfo() {
+      const modal = document.getElementById('groupInfoModal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    function downloadReportNotice() {
+      showToast('Generating official PDF digest for Permit #2026-PLN-0388...');
+      setTimeout(() => {
+        showToast('Summary sent to your WhatsApp direct messages!');
+        closeStaffReportModal();
+      }, 1000);
+    }
+
+    // Search inside chat
+    function toggleSearch() {
+      const bar = document.getElementById('searchBar');
+      bar.classList.toggle('hidden');
+      if (!bar.classList.contains('hidden')) {
+        document.getElementById('searchInput').focus();
+      }
+    }
+
+    function handleSearch(val) {
+      val = val.toLowerCase().trim();
+      const nodes = document.querySelectorAll('.message-node');
+      nodes.forEach(node => {
+        if (!val || node.textContent.toLowerCase().includes(val)) {
+          node.style.display = '';
+        } else {
+          node.style.display = 'none';
+        }
+      });
+    }
+
+    function toggleMenu() {
+      showToast('Group options: Mute, Search, Media, Disappearing Messages');
+    }
+
+    // Reset Conversation to original prompt state
+    function resetConversation() {
+      document.getElementById('dynamicMessages').innerHTML = '';
+      const input = document.getElementById('messageInput');
+      input.value = '';
+      handleInputState('');
+      showToast('Conversation reloaded to initial state');
+      scrollToBottom();
+    }
+
+    // Utility: HTML escape
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag)
+      );
+    }
+
+    // Close modals with Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeStaffReportModal();
+        closeGroupInfo();
+      }
+    });
+  </script>
+</body>
+</html>
