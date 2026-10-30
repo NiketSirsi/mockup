@@ -117,6 +117,21 @@
     .bot-glow {
       animation: pulseGlow 3s infinite;
     }
+
+    /* WhatsApp Message Entry Animation */
+    @keyframes messagePopIn {
+      0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.97);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .msg-enter {
+      animation: messagePopIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-800 antialiased min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 selection:bg-teal-600 selection:text-white font-sans">
@@ -138,12 +153,21 @@
 
     <!-- Mode controls -->
     <div class="flex items-center gap-2">
-      <!-- Auto-scroll toggle button -->
-      <button id="autoScrollToggleBtn" onclick="toggleAutoScroll()" class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Toggle automatic slow scrolling">
-        <svg id="autoScrollIcon" class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      <!-- Replay Conversation Animation -->
+      <button id="replayBtn" onclick="replayConversation()" class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md bg-teal-700 hover:bg-teal-600 text-white font-medium border border-teal-500/50 shadow transition" title="Replay animated chat conversation from beginning">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span id="autoScrollLabel">Auto-Scroll: On</span>
+        <span>Replay Chat</span>
+      </button>
+
+      <!-- Fast-Forward / Show All Messages -->
+      <button id="showAllBtn" onclick="skipAnimation()" class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Show all conversation bubbles immediately">
+        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+        </svg>
+        <span>Show All</span>
       </button>
 
       <button id="soundToggleBtn" onclick="toggleSound()" class="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Toggle audio effects">
@@ -151,13 +175,6 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
         </svg>
         <span id="soundLabel">Sound: On</span>
-      </button>
-
-      <button onclick="resetConversation()" class="flex items-center gap-1 px-2.5 py-1 text-xs rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Restart simulation from top">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        <span>Replay</span>
       </button>
 
       <div class="hidden sm:flex items-center bg-slate-800 p-0.5 rounded-lg border border-slate-700 text-xs">
@@ -284,7 +301,7 @@
         </div>
 
         <!-- Message 1: Sarah -->
-        <div class="flex flex-col items-start message-node" data-sender="Sarah">
+        <div id="msg-1" class="flex flex-col items-start message-node hidden opacity-0 translate-y-3 transition-all duration-300" data-sender="Sarah">
           <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
             <div class="flex items-baseline justify-between gap-3 mb-0.5">
               <span class="font-bold text-[12px] text-[#E542A3]">Sarah (Monta Vista)</span>
@@ -299,7 +316,7 @@
         </div>
 
         <!-- Message 2: Dave -->
-        <div class="flex flex-col items-start message-node" data-sender="Dave">
+        <div id="msg-2" class="flex flex-col items-start message-node hidden opacity-0 translate-y-3 transition-all duration-300" data-sender="Dave">
           <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
             <div class="flex items-baseline justify-between gap-3 mb-0.5">
               <span class="font-bold text-[12px] text-[#7C3AED]">Dave (Portal Park)</span>
@@ -314,7 +331,7 @@
         </div>
 
         <!-- Message 3: Priya asking Curbwire -->
-        <div class="flex flex-col items-start message-node" data-sender="Priya">
+        <div id="msg-3" class="flex flex-col items-start message-node hidden opacity-0 translate-y-3 transition-all duration-300" data-sender="Priya">
           <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
             <div class="flex items-baseline justify-between gap-3 mb-0.5">
               <span class="font-bold text-[12px] text-[#0284C7]">Priya</span>
@@ -329,7 +346,7 @@
         </div>
 
         <!-- Message 4: Curbwire Bot Response -->
-        <div class="flex flex-col items-start message-node" data-sender="Curbwire Bot">
+        <div id="msg-4" class="flex flex-col items-start message-node hidden opacity-0 translate-y-3 transition-all duration-300" data-sender="Curbwire Bot">
           <div class="bg-white text-wa-textPrimary max-w-[92%] sm:max-w-[88%] rounded-lg rounded-tl-none p-2.5 sm:p-3 shadow-md border-l-4 border-l-teal-600 border-t border-r border-b border-slate-200/70 bubble-tail-left relative">
             
             <!-- Bot Header Badge -->
@@ -404,7 +421,7 @@
         </div>
 
         <!-- Message 5: Dave -->
-        <div class="flex flex-col items-start message-node" data-sender="Dave">
+        <div id="msg-5" class="flex flex-col items-start message-node hidden opacity-0 translate-y-3 transition-all duration-300" data-sender="Dave">
           <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
             <div class="flex items-baseline justify-between gap-3 mb-0.5">
               <span class="font-bold text-[12px] text-[#7C3AED]">Dave (Portal Park)</span>
@@ -419,7 +436,7 @@
         </div>
 
         <!-- Message 6: Sarah -->
-        <div class="flex flex-col items-start message-node" data-sender="Sarah">
+        <div id="msg-6" class="flex flex-col items-start message-node hidden opacity-0 translate-y-3 transition-all duration-300" data-sender="Sarah">
           <div class="bg-white text-wa-textPrimary max-w-[85%] rounded-lg rounded-tl-none p-2 sm:p-2.5 shadow-sm border border-slate-200/50 bubble-tail-left relative">
             <div class="flex items-baseline justify-between gap-3 mb-0.5">
               <span class="font-bold text-[12px] text-[#E542A3]">Sarah (Monta Vista)</span>
@@ -434,7 +451,7 @@
         </div>
 
         <!-- Message 7: Curbwire Bot Proactive Alert -->
-        <div class="flex flex-col items-start message-node" data-sender="Curbwire Bot">
+        <div id="msg-7" class="flex flex-col items-start message-node hidden opacity-0 translate-y-3 transition-all duration-300" data-sender="Curbwire Bot">
           <div class="bg-white text-wa-textPrimary max-w-[92%] sm:max-w-[88%] rounded-lg rounded-tl-none p-2.5 sm:p-3 shadow-md border-l-4 border-l-amber-500 border-t border-r border-b border-slate-200/70 bubble-tail-left relative">
             
             <!-- Bot Header Badge -->
@@ -817,103 +834,184 @@
     }
 
     // -------------------------------------------------------------------------
-    // Automatic Slow Scroll Engine
+    // Staggered Conversation Playback Engine (Sequential Chat Delivery)
     // -------------------------------------------------------------------------
-    let isAutoScrolling = true;
-    let autoScrollRafId = null;
-    let userInteracting = false;
-    let userInteractionTimeout = null;
-    const scrollSpeedPixelsPerSecond = 28; // Gentle reading speed: ~28px per second
-    let lastScrollTimestamp = null;
-    let autoScrollStartDelayTimer = null;
+    let animationTimeouts = [];
+    let isAnimationRunning = false;
 
-    function initAutoScroll() {
-      const chatArea = document.getElementById('chatMessages');
-      if (!chatArea) return;
-
-      // Start at the top so user can see conversation unfold from message 1
-      chatArea.scrollTop = 0;
-
-      // Detect user manual scroll/drag/touch to temporarily pause auto-scrolling
-      const pauseOnUserInput = () => {
-        if (!isAutoScrolling) return;
-        userInteracting = true;
-        clearTimeout(userInteractionTimeout);
-        userInteractionTimeout = setTimeout(() => {
-          userInteracting = false;
-        }, 3000); // Resume 3s after user stops touching/scrolling
-      };
-
-      chatArea.addEventListener('wheel', pauseOnUserInput, { passive: true });
-      chatArea.addEventListener('touchmove', pauseOnUserInput, { passive: true });
-      chatArea.addEventListener('pointerdown', pauseOnUserInput, { passive: true });
-
-      // Start slow scroll after an initial 1.8s delay (gives user time to absorb header & first message)
-      autoScrollStartDelayTimer = setTimeout(() => {
-        startAutoScrollLoop();
-      }, 1800);
+    // Helper to safely schedule animation steps
+    function scheduleStep(fn, delay) {
+      const id = setTimeout(fn, delay);
+      animationTimeouts.push(id);
+      return id;
     }
 
-    function startAutoScrollLoop() {
-      if (autoScrollRafId) cancelAnimationFrame(autoScrollRafId);
-      lastScrollTimestamp = null;
-
-      function step(timestamp) {
-        if (!lastScrollTimestamp) lastScrollTimestamp = timestamp;
-        const deltaSeconds = (timestamp - lastScrollTimestamp) / 1000;
-        lastScrollTimestamp = timestamp;
-
-        const chatArea = document.getElementById('chatMessages');
-        if (chatArea && isAutoScrolling && !userInteracting) {
-          const maxScroll = chatArea.scrollHeight - chatArea.clientHeight;
-          if (chatArea.scrollTop < maxScroll - 1) {
-            chatArea.scrollTop += scrollSpeedPixelsPerSecond * deltaSeconds;
-          }
-        }
-
-        autoScrollRafId = requestAnimationFrame(step);
-      }
-
-      autoScrollRafId = requestAnimationFrame(step);
-    }
-
-    function toggleAutoScroll() {
-      isAutoScrolling = !isAutoScrolling;
-      updateAutoScrollUI();
-      if (isAutoScrolling) {
-        userInteracting = false;
-        showToast('Auto-scroll resumed');
-        startAutoScrollLoop();
+    // Set typing status in WhatsApp header subtitle
+    function setHeaderTyping(senderName) {
+      const subtitle = document.getElementById('groupSubtitle');
+      if (!subtitle) return;
+      if (senderName) {
+        subtitle.innerHTML = `<span class="text-emerald-300 font-semibold animate-pulse">${escapeHTML(senderName)} is typing...</span>`;
       } else {
-        showToast('Auto-scroll paused');
+        subtitle.innerText = 'Sarah, Dave, Priya, Niket, Curbwire Bot';
       }
     }
 
-    function updateAutoScrollUI() {
-      const label = document.getElementById('autoScrollLabel');
-      const icon = document.getElementById('autoScrollIcon');
-      if (!label || !icon) return;
-
-      if (isAutoScrolling) {
-        label.innerText = 'Auto-Scroll: On';
-        icon.classList.remove('text-slate-500');
-        icon.classList.add('text-emerald-400');
-      } else {
-        label.innerText = 'Auto-Scroll: Paused';
-        icon.classList.add('text-slate-500');
-        icon.classList.remove('text-emerald-400');
-      }
+    // Reveal an individual message bubble with sound & smooth scroll
+    function revealMessage(id) {
+      const msg = document.getElementById(id);
+      if (!msg) return;
+      msg.classList.remove('hidden');
+      msg.classList.add('msg-enter');
+      requestAnimationFrame(() => {
+        msg.classList.remove('opacity-0', 'translate-y-3');
+      });
+      playReceiveSound();
+      scrollToBottom();
     }
 
     // Scroll chat to bottom helper
     function scrollToBottom() {
       const chatArea = document.getElementById('chatMessages');
+      if (!chatArea) return;
       setTimeout(() => {
         chatArea.scrollTo({
           top: chatArea.scrollHeight,
           behavior: 'smooth'
         });
-      }, 50);
+      }, 70);
+    }
+
+    // Start the natural staggered chat delivery
+    function startConversationPlayback() {
+      // Clear existing timers
+      animationTimeouts.forEach(clearTimeout);
+      animationTimeouts = [];
+      isAnimationRunning = true;
+
+      const chatArea = document.getElementById('chatMessages');
+      if (chatArea) chatArea.scrollTop = 0;
+
+      // Step 1: Sarah's message appears (0.6s)
+      scheduleStep(() => {
+        revealMessage('msg-1');
+      }, 600);
+
+      // Step 2: Dave types and sends (typing at 2.4s, sends at 3.6s)
+      scheduleStep(() => {
+        setHeaderTyping('Dave');
+      }, 2400);
+      scheduleStep(() => {
+        setHeaderTyping(null);
+        revealMessage('msg-2');
+      }, 3600);
+
+      // Step 3: Priya asks Curbwire (typing at 5.2s, sends at 6.4s)
+      scheduleStep(() => {
+        setHeaderTyping('Priya');
+      }, 5200);
+      scheduleStep(() => {
+        setHeaderTyping(null);
+        revealMessage('msg-3');
+      }, 6400);
+
+      // Step 4: Curbwire Bot scans municipal data (typing at 7.4s, reveals permit at 9.2s)
+      scheduleStep(() => {
+        setHeaderTyping('Curbwire Bot');
+        const typingInd = document.getElementById('typingIndicator');
+        if (typingInd) {
+          typingInd.classList.remove('hidden');
+          scrollToBottom();
+        }
+      }, 7400);
+      scheduleStep(() => {
+        const typingInd = document.getElementById('typingIndicator');
+        if (typingInd) typingInd.classList.add('hidden');
+        setHeaderTyping(null);
+        revealMessage('msg-4');
+      }, 9200);
+
+      // Step 5: Dave reacts (typing at 11.4s, sends at 12.4s)
+      scheduleStep(() => {
+        setHeaderTyping('Dave');
+      }, 11400);
+      scheduleStep(() => {
+        setHeaderTyping(null);
+        revealMessage('msg-5');
+      }, 12400);
+
+      // Step 6: Sarah says thanks (typing at 14.2s, sends at 15.2s)
+      scheduleStep(() => {
+        setHeaderTyping('Sarah');
+      }, 14200);
+      scheduleStep(() => {
+        setHeaderTyping(null);
+        revealMessage('msg-6');
+      }, 15200);
+
+      // Step 7: Curbwire Proactive Alert (typing at 17.0s, alert pops at 18.2s)
+      scheduleStep(() => {
+        setHeaderTyping('Curbwire Bot');
+      }, 17000);
+      scheduleStep(() => {
+        setHeaderTyping(null);
+        revealMessage('msg-7');
+        isAnimationRunning = false;
+        showToast('All messages delivered! Try asking @Curbwire anything.');
+      }, 18200);
+    }
+
+    // Skip / Show All: Instantly reveals all 7 messages
+    function skipAnimation() {
+      animationTimeouts.forEach(clearTimeout);
+      animationTimeouts = [];
+      isAnimationRunning = false;
+
+      const typingInd = document.getElementById('typingIndicator');
+      if (typingInd) typingInd.classList.add('hidden');
+      setHeaderTyping(null);
+
+      for (let i = 1; i <= 7; i++) {
+        const msg = document.getElementById(`msg-${i}`);
+        if (msg) {
+          msg.classList.remove('hidden', 'opacity-0', 'translate-y-3');
+          msg.classList.add('msg-enter');
+        }
+      }
+
+      scrollToBottom();
+      showToast('All conversation bubbles displayed');
+    }
+
+    // Replay the full chat sequence from the top
+    function replayConversation() {
+      animationTimeouts.forEach(clearTimeout);
+      animationTimeouts = [];
+
+      // Clear dynamic user messages
+      document.getElementById('dynamicMessages').innerHTML = '';
+      const input = document.getElementById('messageInput');
+      input.value = '';
+      handleInputState('');
+
+      // Hide all 7 messages
+      for (let i = 1; i <= 7; i++) {
+        const msg = document.getElementById(`msg-${i}`);
+        if (msg) {
+          msg.classList.add('hidden', 'opacity-0', 'translate-y-3');
+          msg.classList.remove('msg-enter');
+        }
+      }
+
+      const typingInd = document.getElementById('typingIndicator');
+      if (typingInd) typingInd.classList.add('hidden');
+      setHeaderTyping(null);
+
+      const chatArea = document.getElementById('chatMessages');
+      if (chatArea) chatArea.scrollTop = 0;
+
+      showToast('Replaying chat conversation from the beginning...');
+      startConversationPlayback();
     }
 
     // Toast alert notification
@@ -1164,6 +1262,10 @@
       const text = input.value.trim();
       if (!text) return;
 
+      if (isAnimationRunning) {
+        skipAnimation();
+      }
+
       appendUserMessage(text);
       input.value = '';
       handleInputState('');
@@ -1294,31 +1396,8 @@
       showToast('Group options: Mute, Search, Media, Disappearing Messages');
     }
 
-    // Reset Conversation to original prompt state
-    function resetConversation() {
-      document.getElementById('dynamicMessages').innerHTML = '';
-      const input = document.getElementById('messageInput');
-      input.value = '';
-      handleInputState('');
-
-      const chatArea = document.getElementById('chatMessages');
-      if (chatArea) {
-        chatArea.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-
-      // Reset auto-scroll to play smoothly from the top
-      userInteracting = false;
-      isAutoScrolling = true;
-      updateAutoScrollUI();
-      clearTimeout(autoScrollStartDelayTimer);
-      if (autoScrollRafId) cancelAnimationFrame(autoScrollRafId);
-
-      autoScrollStartDelayTimer = setTimeout(() => {
-        startAutoScrollLoop();
-      }, 1400);
-
-      showToast('Replaying conversation from the top');
-    }
+    // Alias for backwards compatibility
+    const resetConversation = replayConversation;
 
     // Utility: HTML escape
     function escapeHTML(str) {
@@ -1341,9 +1420,9 @@
       }
     });
 
-    // Start auto-scroll engine on page load
+    // Start animated conversation playback on page load
     window.addEventListener('load', () => {
-      initAutoScroll();
+      startConversationPlayback();
     });
   </script>
 </body>
